@@ -14,7 +14,12 @@
     "incremental": true,
     "declarationMap": true,
     "inlineSourceMap": true,
-    "inlineSources": true
+    "inlineSources": true,
+    "baseUrl": ".",
+    "paths": {                                           /* Specify a set of entries that re-map imports to additional lookup locations. */
+      "@pages/*":["pages/*"],
+      "@lib/*":["lib/*"],
+    }
   },
   "include": ["**/*"],
   "exclude": ["node_modules"]
