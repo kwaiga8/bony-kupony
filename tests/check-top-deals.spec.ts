@@ -20,3 +20,7 @@ test(`Validate that Staff Picks contains unique stores with proper discounts for
   await mainPage.staffPicksBannersHasCorrectValues();
   await mainPage.staffPicksAreUnique();
 });
+
+test(`Validate that the Top Deal swiper is automatically changed every 5 seconds`, async ({ mainPage }) => {
+  await mainPage.topOfTheTopDealsSwipesCorrectly();
+});

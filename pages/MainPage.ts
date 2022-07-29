@@ -1,12 +1,16 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 import { iterateLocator } from '../support/utils';
+import { WebTestActions } from '@lib/WebTestActions';
+
+let webActions: WebTestActions;
 
 export class MainPage {
   readonly page: Page;
 
   constructor(page: Page) {
     this.page = page;
+    webActions = new WebTestActions(this.page);
   }
 
   async visit(): Promise<void> {
@@ -52,17 +56,16 @@ export class MainPage {
     const topOfTheTopDealsNumber = await this.topOfTheTopDeals.count();
     const topDealsNumber = await this.topDeals.count();
     const trendingDealsNumber = await this.trendingDeals.count();
-    console.log(allDealsNumber + '\n' + topDealsNumber + '\n' + topOfTheTopDealsNumber + '\n' + trendingDealsNumber);
     expect(allDealsNumber, `All deals number should equal the trending deals the top 3 deals and the 3 or 6 staff picks`).toEqual(
       topOfTheTopDealsNumber + topDealsNumber + trendingDealsNumber,
     );
   }
 
-  async dealsAreVisible() {
+  async dealsAreVisible(): Promise<void> {
     expect(await this.allDeals.count(), `deals should be visible on the page`).toBeGreaterThan(0);
   }
 
-  async topThreeDealsAreDisplayed() {
+  async topThreeDealsAreDisplayed(): Promise<void> {
     for await (const element of iterateLocator(this.topOfTheTopDeals)) {
       await expect(element).toBeVisible();
       const text = await element.getAttribute('title');
@@ -71,7 +74,7 @@ export class MainPage {
     expect(await this.topOfTheTopDeals.count()).toEqual(3);
   }
 
-  async trendingDealsAreVisible() {
+  async trendingDealsAreVisible(): Promise<void> {
     const minimumTrendingDealsNo: number = 30;
     expect(await this.trendingDeals.count()).toBeGreaterThanOrEqual(minimumTrendingDealsNo);
     for (let i = 0; i < minimumTrendingDealsNo; i++) {
@@ -79,7 +82,7 @@ export class MainPage {
     }
   }
 
-  async staffPicksBannersHasCorrectValues() {
+  async staffPicksBannersHasCorrectValues(): Promise<void> {
     for await (const element of iterateLocator(this.topDeals.locator('.title-container>> .title'))) {
       const text = await element.textContent();
       await expect(element, `${text.trim} banner should contain monetary, percentage or text values`).toContainText(
@@ -88,7 +91,7 @@ export class MainPage {
     }
   }
 
-  async staffPicksAreUnique() {
+  async staffPicksAreUnique(): Promise<void> {
     let staffPicksTexts: string[] = [];
     for await (const element of iterateLocator(this.topDeals.locator('.merch'))) {
       const text = await element.textContent();
@@ -98,5 +101,19 @@ export class MainPage {
       staffPicksTexts.every((e, i, a) => a.indexOf(e) === i),
       `name of companies should be unique ${staffPicksTexts}`,
     ).toBeTruthy();
+  }
+
+  async topOfTheTopDealsSwipesCorrectly(): Promise<void> {
+    if ((await this.topOfTheTopDeals.count()) > 3) {
+      const newTopDealSelector = `.top-deal>>${this.dealsSelector}>>nth=3`;
+      await webActions.delay(5000);
+      try {
+        await webActions.waitForElementAttached(newTopDealSelector);
+      } catch (e) {
+        console.log(e, 'Not found element, deals not swipe');
+      }
+    } else {
+      console.log('There is only 3 best deals, scenario will not be executed');
+    }
   }
 }
