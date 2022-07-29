@@ -34,13 +34,26 @@ export class MainPage {
     return this.page.locator(`.top-deal>>${this.dealsSelector}`);
   }
 
-  //staff-picks
   get topDeals(): Locator {
     return this.page.locator(`.staff-pick>>${this.dealsSelector}`);
   }
 
   get trendingDeals(): Locator {
-    return this.page.locator(`.trending-offer>>${this.dealsSelector}`);
+    if (this.isMobile) {
+      return this.page.locator(`.trending-mobile>>${this.dealsSelector}`);
+    } else return this.page.locator(`.trending-offer>>${this.dealsSelector}`);
+  }
+
+  get activeTopDeal(): Locator {
+    return this.page.locator('.swiper-slide-active');
+  }
+
+  get nextTopDeal(): Locator {
+    return this.page.locator('.swiper-slide-next');
+  }
+
+  get previousTopDeal(): Locator {
+    return this.page.locator('.swiper-slide-prev');
   }
 
   async debug(): Promise<void> {
@@ -54,16 +67,13 @@ export class MainPage {
   }
 
   async checkTopDealsNumber(): Promise<void> {
-    if (!this.isMobile) {
-      const allDealsNumber = await this.allDeals.count();
-      const topOfTheTopDealsNumber = await this.topOfTheTopDeals.count();
-      const topDealsNumber = await this.topDeals.count();
-      const trendingDealsNumber = await this.trendingDeals.count();
-      expect(
-        allDealsNumber,
-        `All deals number should equal the trending deals the top 3 deals and the 3 or 6 staff picks`,
-      ).toEqual(topOfTheTopDealsNumber + topDealsNumber + trendingDealsNumber);
-    }
+    const allDealsNumber = await this.allDeals.count();
+    const topOfTheTopDealsNumber = await this.topOfTheTopDeals.count();
+    const topDealsNumber = await this.topDeals.count();
+    const trendingDealsNumber = await this.trendingDeals.count();
+    expect(allDealsNumber, `All deals number should equal the trending deals the top 3 deals and the 3 or 6 staff picks`).toEqual(
+      topOfTheTopDealsNumber + topDealsNumber + trendingDealsNumber,
+    );
   }
 
   async dealsAreVisible(): Promise<void> {
@@ -71,7 +81,11 @@ export class MainPage {
   }
 
   async topThreeDealsAreDisplayed(): Promise<void> {
-    if (!this.isMobile) {
+    if (this.isMobile) {
+      await expect(this.activeTopDeal).toBeVisible();
+      await expect(this.nextTopDeal).toBeVisible();
+      await expect(this.previousTopDeal).toBeVisible();
+    } else {
       for await (const element of iterateLocator(this.topOfTheTopDeals)) {
         await expect(element).toBeVisible();
         const text = await element.getAttribute('title');
@@ -82,12 +96,10 @@ export class MainPage {
   }
 
   async trendingDealsAreVisible(): Promise<void> {
-    if (!this.isMobile) {
-      const minimumTrendingDealsNo: number = 30;
-      expect(await this.trendingDeals.count()).toBeGreaterThanOrEqual(minimumTrendingDealsNo);
-      for (let i = 0; i < minimumTrendingDealsNo; i++) {
-        await expect(await this.trendingDeals.nth(i)).toBeVisible();
-      }
+    const minimumTrendingDealsNo: number = 30;
+    expect(await this.trendingDeals.count()).toBeGreaterThanOrEqual(minimumTrendingDealsNo);
+    for (let i = 0; i < minimumTrendingDealsNo; i++) {
+      await expect(await this.trendingDeals.nth(i)).toBeVisible();
     }
   }
 

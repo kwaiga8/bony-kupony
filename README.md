@@ -17,3 +17,5 @@ You can execute tests by:
 npm i 
 npm run test
 ```
+## sample results
+![results](support/sample-results/sample-result.png?raw=true "Results")
