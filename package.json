@@ -7,7 +7,7 @@
     "test": "npx playwright test",
     "lint": "eslint **/*.ts",
     "lint:fix": "eslint **/*.ts --fix",
-    "show-report": "npx playwright show-report"
+    "postest": "npx playwright show-report"
   },
   "repository": {
     "type": "git",
