@@ -4,8 +4,8 @@ import { MainPage } from '@pages/MainPage';
 const test = baseTest.extend<{
   mainPage: MainPage;
 }>({
-  mainPage: async ({ page }, use) => {
-    await use(new MainPage(page));
+  mainPage: async ({ page, isMobile }, use) => {
+    await use(new MainPage(page, isMobile));
   },
 });
 

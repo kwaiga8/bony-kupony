@@ -7,14 +7,16 @@ let webActions: WebTestActions;
 
 export class MainPage {
   readonly page: Page;
+  readonly isMobile: boolean;
 
-  constructor(page: Page) {
+  constructor(page: Page, isMobile: boolean) {
     this.page = page;
+    this.isMobile = isMobile;
     webActions = new WebTestActions(this.page);
   }
 
   async visit(): Promise<void> {
-    await this.page.goto('https://couponfollow.com/');
+    await this.page.goto('');
   }
 
   get logo(): Locator {
@@ -52,13 +54,16 @@ export class MainPage {
   }
 
   async checkTopDealsNumber(): Promise<void> {
-    const allDealsNumber = await this.allDeals.count();
-    const topOfTheTopDealsNumber = await this.topOfTheTopDeals.count();
-    const topDealsNumber = await this.topDeals.count();
-    const trendingDealsNumber = await this.trendingDeals.count();
-    expect(allDealsNumber, `All deals number should equal the trending deals the top 3 deals and the 3 or 6 staff picks`).toEqual(
-      topOfTheTopDealsNumber + topDealsNumber + trendingDealsNumber,
-    );
+    if (!this.isMobile) {
+      const allDealsNumber = await this.allDeals.count();
+      const topOfTheTopDealsNumber = await this.topOfTheTopDeals.count();
+      const topDealsNumber = await this.topDeals.count();
+      const trendingDealsNumber = await this.trendingDeals.count();
+      expect(
+        allDealsNumber,
+        `All deals number should equal the trending deals the top 3 deals and the 3 or 6 staff picks`,
+      ).toEqual(topOfTheTopDealsNumber + topDealsNumber + trendingDealsNumber);
+    }
   }
 
   async dealsAreVisible(): Promise<void> {
@@ -66,19 +71,23 @@ export class MainPage {
   }
 
   async topThreeDealsAreDisplayed(): Promise<void> {
-    for await (const element of iterateLocator(this.topOfTheTopDeals)) {
-      await expect(element).toBeVisible();
-      const text = await element.getAttribute('title');
-      expect(text.trim(), `Standard title for element not found`).toContain('(opens in a new tab)');
+    if (!this.isMobile) {
+      for await (const element of iterateLocator(this.topOfTheTopDeals)) {
+        await expect(element).toBeVisible();
+        const text = await element.getAttribute('title');
+        expect(text.trim(), `Standard title for element not found`).toContain('(opens in a new tab)');
+      }
+      expect(await this.topOfTheTopDeals.count()).toEqual(3);
     }
-    expect(await this.topOfTheTopDeals.count()).toEqual(3);
   }
 
   async trendingDealsAreVisible(): Promise<void> {
-    const minimumTrendingDealsNo: number = 30;
-    expect(await this.trendingDeals.count()).toBeGreaterThanOrEqual(minimumTrendingDealsNo);
-    for (let i = 0; i < minimumTrendingDealsNo; i++) {
-      await expect(await this.trendingDeals.nth(i)).toBeVisible();
+    if (!this.isMobile) {
+      const minimumTrendingDealsNo: number = 30;
+      expect(await this.trendingDeals.count()).toBeGreaterThanOrEqual(minimumTrendingDealsNo);
+      for (let i = 0; i < minimumTrendingDealsNo; i++) {
+        await expect(await this.trendingDeals.nth(i)).toBeVisible();
+      }
     }
   }
 
